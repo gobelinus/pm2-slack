@@ -16,6 +16,7 @@ const redEvents = ['stop', 'exit', 'delete', 'error', 'kill', 'exception', 'rest
 const redColor = '#F44336';
 const commonColor = '#2196F3';
 
+let servername = '';
 
 /**
  * Sends immediately the message(s) to Slack's Incoming Webhook.
@@ -29,6 +30,8 @@ function sendToSlack(messages, config) {
     if (!config.slack_url) {
         return console.error("There is no Slack URL set, please set the Slack URL: 'pm2 set pm2-slack:slack_url https://slack_url'");
     }
+
+    servername = config.servername || '';
 
     let limitedCountOfMessages;
     if (config.queue_max > 0) {
@@ -131,7 +134,11 @@ function convertMessagesToSlackAttachments(messages) {
             color = redColor;
         }
 
-        var title = `${message.name} ${message.event}`;
+        let serverinfo = '';
+        try {
+            serverinfo = ' on ' + servername + ' ( ' + os.userInfo().username + '@' + os.hostname + ' )';
+        } catch(e) { console.warn(e);}
+        var title = `${message.name} ${message.event}` + serverinfo;
         var description = (message.description || '').trim();
         var fallbackText = title + (description ? ': ' + description.replace(/[\r\n]+/g, ', ') : '');
         slackAttachments.push({

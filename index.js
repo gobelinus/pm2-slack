@@ -75,11 +75,23 @@ const slackUrlRouter = {
             // No Slack URL defined for this process and no global Slack URL exists.
         }
 
+        try {
+          if (moduleConfig.ignore_logs_pattern) {
+            const ignorePattern = new RegExp(moduleConfig.ignore_logs_pattern);
+            if (ignorePattern.test(message.description)) {
+              // we should ignore this message as this passes our ignorePattern
+              return;
+            }
+          }
+        } catch (e) {
+          // do nothing, pass
+        }
+
         if (!this.messageQueues[slackUrl]) {
             // Init new messageQueue to different Slack URL.
 
             // Resolve configuration parameters.
-            const configProperties = ['username', 'servername', 'buffer', 'slack_url', 'buffer_seconds', 'buffer_max_seconds', 'queue_max'];
+            const configProperties = ['username', 'servername', 'buffer', 'slack_url', 'buffer_seconds', 'buffer_max_seconds', 'queue_max', 'ignore_logs_pattern'];
             const config = {};
             configProperties.map((configPropertyName) => {
                 // Use process based custom configuration values if exist, else use the global configuration values.
